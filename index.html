@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#15243A">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>Muscu · KeepCool</title>
+<style>
+  :root{
+    --chrome:#15243A; --chrome2:#1E3556; --bg:#EAEEF3; --card:#FFFFFF;
+    --ink:#15243A; --muted:#64748B; --line:#D8E0EA;
+    --blue:#2E6CA4; --green:#1F9D55; --amber:#E0791A; --amber-bg:#FCEEDD;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; background:var(--bg);}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); font-size:16px; line-height:1.4; padding-bottom:64px;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:560px; margin:0 auto;}
+
+  /* ---- App bar ---- */
+  header{position:sticky; top:0; z-index:20; background:var(--chrome);
+    color:#fff; padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;}
+  .eyebrow{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#8FA6C4; font-weight:700;}
+  .title{font-size:19px; font-weight:800; letter-spacing:-.01em; margin:1px 0 10px;}
+  .tabs{display:grid; grid-template-columns:repeat(5,1fr); gap:5px;}
+  .tab{appearance:none; border:0; cursor:pointer; border-radius:10px; padding:8px 2px 7px;
+    background:var(--chrome2); color:#AFC0D8; font-family:inherit; text-align:center;
+    transition:background .15s,color .15s;}
+  .tab b{display:block; font-size:13px; font-weight:800; letter-spacing:.03em;}
+  .tab span{display:block; font-size:10px; margin-top:1px; opacity:.85;}
+  .tab.active{background:#fff; color:var(--chrome);}
+  .tab.active b{color:var(--chrome);}
+  .tab:focus-visible{outline:2px solid #fff; outline-offset:2px;}
+
+  .week{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px;}
+  .wk-label{font-size:14px; font-weight:700; color:#DCE6F2;}
+  .wk-label .sub{display:block; font-size:11px; font-weight:500; color:#8FA6C4; margin-top:1px;}
+  .stepper{display:flex; align-items:center; gap:8px;}
+  .stepper button{appearance:none; border:0; cursor:pointer; width:40px; height:40px; border-radius:10px;
+    background:var(--chrome2); color:#fff; font-size:22px; line-height:1; font-family:inherit;}
+  .stepper button:active{background:#0E1A2C;}
+  .stepper button:disabled{opacity:.3;}
+  .stepper button:focus-visible{outline:2px solid #fff; outline-offset:2px;}
+  .tools{display:flex; gap:8px; margin-top:8px;}
+  .tools button{flex:1; appearance:none; border:0; cursor:pointer; border-radius:10px; padding:8px 4px;
+    background:var(--chrome2); color:#DCE6F2; font-family:inherit; font-size:12.5px; font-weight:700;}
+  .tools button:active{background:#0E1A2C;}
+  .btnrow{display:flex; align-items:center; gap:14px;}
+  .vid-btn{margin-left:auto; margin-top:10px; color:#B3261E; font-size:13px; font-weight:700;
+    text-decoration:none; padding:2px 0; white-space:nowrap;}
+  .wk-num{min-width:96px; text-align:center; font-size:15px; font-weight:800; color:#fff;}
+
+  /* ---- Content ---- */
+  main{padding:12px;}
+  .banner{display:flex; gap:8px; align-items:flex-start; background:var(--amber-bg);
+    border:1px solid #F1D5B0; border-radius:12px; padding:10px 12px; margin-bottom:12px;
+    font-size:13.5px; color:#7A4A12;}
+  .banner b{color:var(--amber);}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:13px 13px 12px; margin-bottom:11px; border-left:4px solid var(--line);}
+  .card.done{border-left-color:var(--green);}
+  .card.reset{border-left-color:var(--amber);}
+  .c-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .c-name{font-size:15.5px; font-weight:700; letter-spacing:-.01em;}
+  .c-idx{color:var(--blue); font-weight:800;}
+  .c-rest{flex:none; font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap;}
+  .c-rest svg{vertical-align:-2px; margin-right:2px;}
+
+  .obj{display:flex; align-items:center; gap:10px; margin:9px 0 4px;}
+  .obj .lab{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700;}
+  .obj .val{font-size:26px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
+  .pill{font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
+    color:#fff; background:var(--amber); border-radius:999px; padding:4px 9px; white-space:nowrap;}
+
+  .sets{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 2px;}
+  .chip{appearance:none; border:1.5px solid var(--line); background:#F6F8FB; cursor:pointer;
+    min-width:46px; height:44px; padding:0 8px; border-radius:11px; font-family:inherit;
+    font-size:15px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums;
+    display:flex; align-items:center; justify-content:center; transition:all .12s;}
+  .chip.on{background:var(--green); border-color:var(--green); color:#fff;}
+  .chip:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+
+  .charge{display:flex; align-items:center; gap:10px; margin-top:11px;}
+  .charge label{font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700;}
+  .charge input{flex:1; min-width:0; height:44px; border:1.5px solid var(--line); border-radius:11px;
+    padding:0 12px; font-size:16px; font-weight:700; color:var(--ink); font-family:inherit; background:#fff;}
+  .charge input::placeholder{color:#A9B6C6; font-weight:600;}
+  .charge input:focus{outline:none; border-color:var(--blue);}
+  .charge input.amber::placeholder{color:var(--amber);}
+
+  .tech-btn{appearance:none; background:none; border:0; cursor:pointer; margin-top:10px; padding:2px 0;
+    color:var(--blue); font-family:inherit; font-size:13px; font-weight:700; display:flex; align-items:center; gap:5px;}
+  .tech-btn .car{transition:transform .15s;}
+  .tech-btn.open .car{transform:rotate(90deg);}
+  .tech{font-size:13.5px; color:#475569; margin-top:7px; padding:9px 11px; background:#F4F7FA;
+    border-radius:10px; display:none;}
+  .tech.open{display:block;}
+
+  /* ---- Status bar ---- */
+  .status{position:fixed; left:0; right:0; bottom:0; z-index:20;
+    background:var(--chrome); color:#fff; padding:11px 14px calc(env(safe-area-inset-bottom) + 11px);
+    font-size:13px; transition:background .2s;}
+  .status .defaultbox{display:flex; justify-content:space-between; align-items:center; width:100%;}
+  .status .prog{font-weight:800;}
+  .status .bar{flex:1; height:6px; background:#28415F; border-radius:99px; margin:0 12px; overflow:hidden;}
+  .status .bar i{display:block; height:100%; background:var(--green); width:0; transition:width .25s;}
+  .status .wk{color:#8FA6C4; font-weight:700; white-space:nowrap;}
+  .status .timerbox{display:none; align-items:center; gap:10px; width:100%;}
+  .status.timing{background:var(--green);}
+  .status.timing .defaultbox{display:none;}
+  .status.timing .timerbox{display:flex;}
+  .t-label{font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:36%;}
+  .t-time{font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+  .t-bar{flex:1; height:6px; background:rgba(255,255,255,.28); border-radius:99px; overflow:hidden;}
+  .t-bar i{display:block; height:100%; background:#fff; width:100%;}
+  .t-cancel{appearance:none; border:0; width:38px; height:38px; border-radius:10px;
+    background:rgba(0,0,0,.25); color:#fff; font-size:20px; line-height:1; cursor:pointer; font-family:inherit;}
+
+  .loader{padding:60px 20px; text-align:center; color:var(--muted);}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Programme reprise · 26 semaines</div>
+    <div class="title" id="dayTitle">Séance</div>
+    <div class="tabs" id="tabs"></div>
+    <div class="week">
+      <div class="wk-label" id="daySub"><span class="sub"></span></div>
+      <div class="stepper">
+        <button id="prev" aria-label="Semaine précédente">‹</button>
+        <div class="wk-num" id="wkNum">Sem. 1</div>
+        <button id="next" aria-label="Semaine suivante">›</button>
+      </div>
+    </div>
+    <div class="tools">
+      <button id="btnExport">💾 Sauvegarder</button>
+      <button id="btnImport">📥 Restaurer</button>
+      <input type="file" id="fileImport" accept=".json,application/json" hidden>
+    </div>
+  </header>
+  <main id="list"><div class="loader">Chargement…</div></main>
+</div>
+<div class="status" id="status">
+  <div class="defaultbox">
+    <span class="prog" id="prog">0/0</span>
+    <span class="bar"><i id="progbar"></i></span>
+    <span class="wk" id="statusWk">Semaine 1 / 26</span>
+  </div>
+  <div class="timerbox">
+    <span class="t-label" id="tLabel">Repos</span>
+    <span class="t-time" id="tTime">0:00</span>
+    <span class="t-bar"><i id="tBarI"></i></span>
+    <button class="t-cancel" id="tCancel" aria-label="Arrêter le repos">×</button>
+  </div>
+</div>
+
+<script>
+const DATA = {"J1|tirage_vertical": {"1": "4×10", "2": "4×11", "3": "4×11", "4": "4×11", "5": "4×12", "6": "4×8", "7": "4×9", "8": "4×10", "9": "4×11", "10": "4×12", "11": "4×8", "12": "4×9", "13": "4×10", "14": "4×11", "15": "4×12", "16": "4×8", "17": "4×9", "18": "4×10", "19": "4×11", "20": "4×12", "21": "4×13", "22": "4×14", "23": "4×15", "24": "4×15", "25": "4×8", "26": "4×9"}, "J1|rowing_1bras": {"1": "3×10", "2": "3×11", "3": "3×11", "4": "3×13", "5": "3×14", "6": "3×15", "7": "3×8", "8": "3×9", "9": "3×11", "10": "3×12", "11": "3×14", "12": "3×15", "13": "3×8", "14": "3×9", "15": "3×11", "16": "3×12", "17": "3×14", "18": "3×15", "19": "3×8", "20": "3×9", "21": "3×11", "22": "3×12", "23": "3×14", "24": "3×15", "25": "3×8", "26": "3×9"}, "J1|rowing_pbasse": {"1": "4×12", "2": "4×13", "3": "4×13", "4": "4×15", "5": "4×8", "6": "4×9", "7": "4×11", "8": "4×12", "9": "4×13", "10": "4×14", "11": "4×15", "12": "4×8", "13": "4×9", "14": "4×10", "15": "4×11", "16": "4×12", "17": "4×13", "18": "4×14", "19": "4×15", "20": "4×8", "21": "4×9", "22": "4×10", "23": "4×11", "24": "4×12", "25": "4×13", "26": "4×14"}, "J1|souleve_terre": {"1": "3×10", "2": "3×11", "3": "3×11", "4": "3×12", "5": "3×8", "6": "3×9", "7": "3×10", "8": "3×12", "9": "3×8", "10": "3×10", "11": "3×11", "12": "3×8", "13": "3×9", "14": "3×10", "15": "3×11", "16": "3×12", "17": "3×8", "18": "3×10", "19": "3×12", "20": "3×8", "21": "3×9", "22": "3×12", "23": "3×8", "24": "3×10", "25": "3×12", "26": "3×8"}, "J1|rowing_debout": {"1": "4×10", "2": "4×12", "3": "4×12", "4": "4×14", "5": "4×16", "6": "4×18", "7": "4×20", "8": "4×10", "9": "4×12", "10": "4×14", "11": "4×16", "12": "4×18", "13": "4×20", "14": "4×10", "15": "4×12", "16": "4×14", "17": "4×16", "18": "4×18", "19": "4×20", "20": "4×10", "21": "4×12", "22": "4×14", "23": "4×16", "24": "4×18", "25": "4×20", "26": "4×10"}, "J1|elevation_lat": {"1": "3×20", "2": "3×22", "3": "3×22", "4": "3×22", "5": "3×24", "6": "3×26", "7": "3×28", "8": "3×30", "9": "3×16", "10": "3×18", "11": "3×20", "12": "3×22", "13": "3×24", "14": "3×26", "15": "3×28", "16": "3×30", "17": "3×16", "18": "3×18", "19": "3×20", "20": "3×22", "21": "3×24", "22": "3×26", "23": "3×28", "24": "3×30", "25": "3×16", "26": "3×18"}, "J1|crunch": {"1": "3×20", "2": "3×30", "3": "3×30", "4": "3×40", "5": "3×50", "6": "3×55", "7": "3×65", "8": "3×75", "9": "3×85", "10": "3×95", "11": "3×100", "12": "3'non-stop", "13": "3'15 non-stop", "14": "3'30 non-stop", "15": "3'45 non-stop", "16": "4'non-stop", "17": "4'15 non-stop", "18": "4'30 non-stop", "19": "4'45 non-stop", "20": "5'non-stop", "21": "2'non-stop", "22": "2'15 non-stop", "23": "2'30 non-stop", "24": "2'45 non-stop", "25": "3'non-stop", "26": "3'15 non-stop"}, "J1|enroulement": {"1": "3×12", "2": "3×16", "3": "3×16", "4": "3×20", "5": "3×24", "6": "3×24", "7": "3×28", "8": "3×32", "9": "3×36", "10": "3×40", "11": "3×44", "12": "3×48", "13": "3×50", "14": "3×50", "15": "3×50", "16": "3×50", "17": "3×50", "18": "3×50", "19": "3×50", "20": "3×50", "21": "3×50", "22": "3×50", "23": "3×50", "24": "3×50", "25": "3×50", "26": "3×50"}, "J2|dc": {"1": "4×10", "2": "4×11", "3": "4×11", "4": "4×11", "5": "4×12", "6": "4×8", "7": "4×9", "8": "4×10", "9": "4×11", "10": "4×12", "11": "4×12", "12": "4×8", "13": "4×8", "14": "4×9", "15": "4×10", "16": "4×12", "17": "4×8", "18": "4×9", "19": "4×12", "20": "4×8", "21": "4×9", "22": "4×10", "23": "4×11", "24": "4×12", "25": "4×8", "26": "4×10"}, "J2|dc_incline": {"1": "3×12", "2": "3×13", "3": "3×13", "4": "3×14", "5": "3×15", "6": "3×8", "7": "3×9", "8": "3×10", "9": "3×11", "10": "3×13", "11": "3×13", "12": "3×14", "13": "3×15", "14": "3×8", "15": "3×9", "16": "3×10", "17": "3×12", "18": "3×13", "19": "3×14", "20": "3×8", "21": "3×9", "22": "3×10", "23": "3×11", "24": "3×12", "25": "3×14", "26": "3×15"}, "J2|ecarte": {"1": "3×12", "2": "3×14", "3": "3×14", "4": "3×16", "5": "3×18", "6": "3×20", "7": "3×10", "8": "3×12", "9": "3×14", "10": "3×16", "11": "3×18", "12": "3×20", "13": "3×10", "14": "3×12", "15": "3×14", "16": "3×16", "17": "3×18", "18": "3×20", "19": "3×10", "20": "3×12", "21": "3×14", "22": "3×16", "23": "3×18", "24": "3×20", "25": "3×10", "26": "3×12"}, "J2|oiseau": {"1": "4×12", "2": "4×14", "3": "4×14", "4": "4×16", "5": "4×18", "6": "4×20", "7": "4×22", "8": "4×24", "9": "4×26", "10": "4×28", "11": "4×30", "12": "4×16", "13": "4×18", "14": "4×20", "15": "4×22", "16": "4×24", "17": "4×26", "18": "4×28", "19": "4×30", "20": "4×16", "21": "4×18", "22": "4×20", "23": "4×22", "24": "4×24", "25": "4×26", "26": "4×28"}, "J2|curl_incline": {"1": "4×12", "2": "4×13", "3": "4×13", "4": "4×14", "5": "4×15", "6": "4×16", "7": "4×17", "8": "4×18", "9": "4×19", "10": "4×20", "11": "4×20", "12": "4×10", "13": "4×11", "14": "4×12", "15": "4×13", "16": "4×14", "17": "4×15", "18": "4×16", "19": "4×17", "20": "4×18", "21": "4×19", "22": "4×20", "23": "4×11", "24": "4×12", "25": "4×13", "26": "4×14"}, "J2|gainage": {"1": "3×40\"", "2": "3×45\"", "3": "3×45\"", "4": "3×50\"", "5": "3×55\"", "6": "3×1'00", "7": "3×1'05", "8": "3×1'10", "9": "3×1'15", "10": "3×1'20", "11": "3×1'20", "12": "3×1'25", "13": "3×1'30", "14": "3×1'35", "15": "3×1'40", "16": "3×1'45", "17": "3×1'50", "18": "3×1'55", "19": "3×2'00", "20": "3×45\"", "21": "3×50\"", "22": "3×55\"", "23": "3×1'00", "24": "3×1'05", "25": "3×1'10", "26": "3×1'15"}, "J2|gainage_obl": {"1": "3×30\"", "2": "3×35\"", "3": "3×35\"", "4": "3×40\"", "5": "3×45\"", "6": "3×50\"", "7": "3×55\"", "8": "3×1'00", "9": "3×1'05", "10": "3×1'10", "11": "3×1'15", "12": "3×1'20", "13": "3×1'25", "14": "3×1'30", "15": "3×1'35", "16": "3×1'40", "17": "3×1'45", "18": "3×1'50", "19": "3×1'55", "20": "3×2'00", "21": "3×45\"", "22": "3×50\"", "23": "3×55\"", "24": "3×1'00", "25": "3×1'05", "26": "3×1'10"}, "J4|squat": {"1": "4×15", "2": "4×8", "3": "4×8", "4": "4×10", "5": "4×10", "6": "4×11", "7": "4×12", "8": "4×8", "9": "4×9", "10": "4×12", "11": "4×8", "12": "4×8", "13": "4×9", "14": "4×10", "15": "4×11", "16": "4×12", "17": "4×12", "18": "4×8", "19": "4×9", "20": "4×10", "21": "4×11", "22": "4×12", "23": "4×8", "24": "4×10", "25": "4×12", "26": "4×8"}, "J4|leg_curl": {"1": "4×12", "2": "4×14", "3": "4×14", "4": "4×16", "5": "4×16", "6": "4×18", "7": "4×20", "8": "4×10", "9": "4×12", "10": "4×14", "11": "4×16", "12": "4×18", "13": "4×20", "14": "4×10", "15": "4×12", "16": "4×14", "17": "4×14", "18": "4×16", "19": "4×18", "20": "4×20", "21": "4×10", "22": "4×12", "23": "4×14", "24": "4×16", "25": "4×18", "26": "4×20"}, "J4|fentes": {"1": "3×12", "2": "3×13", "3": "3×13", "4": "3×14", "5": "3×14", "6": "3×15", "7": "3×8", "8": "3×9", "9": "3×10", "10": "3×11", "11": "3×12", "12": "3×13", "13": "3×15", "14": "3×8", "15": "3×9", "16": "3×10", "17": "3×10", "18": "3×12", "19": "3×13", "20": "3×14", "21": "3×8", "22": "3×9", "23": "3×11", "24": "3×12", "25": "3×13", "26": "3×14"}, "J4|lombaires": {"1": "3×20"}, "J4|mollets": {"1": "4×15", "2": "4×12", "3": "4×12", "4": "4×14", "5": "4×14", "6": "4×16", "7": "4×18", "8": "4×20", "9": "4×10", "10": "4×12", "11": "4×14", "12": "4×16", "13": "4×18", "14": "4×20", "15": "4×10", "16": "4×12", "17": "4×12", "18": "4×14", "19": "4×16", "20": "4×18", "21": "4×20", "22": "4×10", "23": "4×12", "24": "4×14", "25": "4×16", "26": "4×18"}, "J5|traction": {"1": "3× max", "2": "3× max", "3": "4×8", "4": "5×6", "5": "5×6", "6": "6×6", "7": "7×6", "8": "8×6", "9": "9×6", "10": "10×6", "11": "5×7", "12": "6×7", "13": "7×7", "14": "8×7", "15": "9×7", "16": "10×7", "17": "10×7", "18": "5×8", "19": "6×8", "20": "7×8", "21": "8×8", "22": "9×8", "23": "10×8", "24": "10×8", "25": "5×9", "26": "6×9"}, "J5|rowing_assis": {"1": "4×12", "2": "4×12", "3": "4×13", "4": "4×13", "5": "4×13", "6": "4×14", "7": "4×15", "8": "4×8", "9": "4×9", "10": "4×10", "11": "4×11", "12": "4×12", "13": "4×13", "14": "4×14", "15": "4×8", "16": "4×9", "17": "4×9", "18": "4×10", "19": "4×12", "20": "4×14", "21": "4×15", "22": "4×8", "23": "4×9", "24": "4×10", "25": "4×11", "26": "4×12"}, "J5|rowing_yates": {"1": "3×15", "2": "3×15", "3": "3×8", "4": "3×8", "5": "3×8", "6": "3×9", "7": "3×10", "8": "3×11", "9": "3×12", "10": "3×8", "11": "3×9", "12": "3×10", "13": "3×11", "14": "3×8", "15": "3×9", "16": "3×10", "17": "3×10", "18": "3×11", "19": "3×12", "20": "3×8", "21": "3×9", "22": "3×10", "23": "3×12", "24": "3×8", "25": "3×10", "26": "3×12"}, "J5|dips": {"1": "3× max", "2": "3× max", "4": "3×14", "5": "3×14", "6": "3×16", "7": "3×18", "8": "3×20", "9": "3×10", "10": "3×12", "11": "3×14", "12": "3×16", "13": "3×18", "14": "3×20", "15": "3×10", "16": "3×12", "17": "3×12", "18": "3×14", "19": "3×16", "20": "3×18", "21": "3×20", "22": "3×10", "23": "3×12", "24": "3×14", "25": "3×16", "26": "3×18", "3": "3×12"}, "J5|ext_nuque": {"1": "3×12", "2": "3×12", "3": "3×14", "4": "3×14", "5": "3×14", "6": "3×16", "7": "3×18", "8": "3×20", "9": "3×10", "10": "3×12", "11": "3×14", "12": "3×16", "13": "3×18", "14": "3×20", "15": "3×10", "16": "3×12", "17": "3×12", "18": "3×14", "19": "3×16", "20": "3×18", "21": "3×20", "22": "3×10", "23": "3×12", "24": "3×14", "25": "3×16", "26": "3×18"}, "J5|pushdown": {"1": "2×20", "2": "2×20", "3": "2×10", "4": "2×10", "5": "2×10", "6": "2×12", "7": "2×14", "8": "2×16", "9": "2×18", "10": "2×20", "11": "2×10", "12": "2×12", "13": "2×14", "14": "2×16", "15": "2×18", "16": "2×20", "17": "2×20", "18": "2×10", "19": "2×12", "20": "2×14", "21": "2×16", "22": "2×18", "23": "2×20", "24": "2×10", "25": "2×12", "26": "2×14"}, "J5|crunch": {"1": "3×25", "2": "3×25", "3": "3×25", "4": "3×35", "5": "3×35", "6": "3×50", "7": "3×60", "8": "3×70", "9": "3×80", "10": "3×90", "11": "3×100", "12": "3'non-stop", "13": "3'15 non-stop", "14": "3'30 non-stop", "15": "3'45 non-stop", "16": "4'non-stop", "17": "4'non-stop", "18": "4'15 non-stop", "19": "4'30 non-stop", "20": "4'45 non-stop", "21": "5'non-stop", "22": "2'non-stop", "23": "2'15 non-stop", "24": "2'30 non-stop", "25": "2'45 non-stop", "26": "3'non-stop"}, "J5|enroulement": {"1": "3×14", "2": "3×14", "3": "3×14", "4": "3×18", "5": "3×18", "6": "3×22", "7": "3×26", "8": "3×30", "9": "3×34", "10": "3×38", "11": "3×42", "12": "3×46", "13": "3×50", "14": "3×50", "15": "3×50", "16": "3×50", "17": "3×50", "18": "3×50", "19": "3×50", "20": "3×50", "21": "3×50", "22": "3×50", "23": "3×50", "24": "3×50", "25": "3×50", "26": "3×50"}, "J2|curl_pupitre": {"2": "3×13", "3": "3×13", "4": "3×14", "5": "3×15", "6": "3×16", "7": "3×17", "8": "3×18", "9": "3×19", "10": "3×20", "11": "3×10", "12": "3×11", "13": "3×12", "14": "3×13", "15": "3×14", "16": "3×15", "17": "3×16", "18": "3×17", "19": "3×18", "20": "3×19", "21": "3×20", "22": "3×10", "23": "3×11", "24": "3×12", "25": "3×13", "26": "3×14", "1": "3×12"}, "J4|sdt_roumain": {"2": "3×8", "3": "3×8", "4": "3×10", "5": "3×10", "6": "3×12", "7": "3×8", "8": "3×9", "9": "3×10", "10": "3×12", "11": "3×8", "12": "3×8", "13": "3×9", "14": "3×10", "15": "3×12", "16": "3×8", "17": "3×8", "18": "3×9", "19": "3×10", "20": "3×11", "21": "3×12", "22": "3×8", "23": "3×10", "24": "3×12", "25": "3×8", "26": "3×10"}, "J1|facepull": {"1": "3×15-20", "2": "3×15-20", "3": "3×15-20", "4": "3×15-20", "5": "3×15-20", "6": "3×15-20", "7": "3×15-20", "8": "3×15-20", "9": "3×15-20", "10": "3×15-20", "11": "3×15-20", "12": "3×15-20", "13": "3×15-20", "14": "3×15-20", "15": "3×15-20", "16": "3×15-20", "17": "3×15-20", "18": "3×15-20", "19": "3×15-20", "20": "3×15-20", "21": "3×15-20", "22": "3×15-20", "23": "3×15-20", "24": "3×15-20", "25": "3×15-20", "26": "3×15-20"}, "J5|pullover": {"1": "3×12-15", "2": "3×12-15", "3": "3×12-15", "4": "3×12-15", "5": "3×12-15", "6": "3×12-15", "7": "3×12-15", "8": "3×12-15", "9": "3×12-15", "10": "3×12-15", "11": "3×12-15", "12": "3×12-15", "13": "3×12-15", "14": "3×12-15", "15": "3×12-15", "16": "3×12-15", "17": "3×12-15", "18": "3×12-15", "19": "3×12-15", "20": "3×12-15", "21": "3×12-15", "22": "3×12-15", "23": "3×12-15", "24": "3×12-15", "25": "3×12-15", "26": "3×12-15"}, "SAM|liss": {"1": "1×30'", "2": "1×30'", "3": "1×30'", "4": "1×30'", "5": "1×40'", "6": "1×40'", "7": "1×40'", "8": "1×40'", "9": "1×40'", "10": "1×40'", "11": "1×40'", "12": "1×40'", "13": "1×45'", "14": "1×45'", "15": "1×45'", "16": "1×45'", "17": "1×45'", "18": "1×45'", "19": "1×45'", "20": "1×45'", "21": "1×45'", "22": "1×45'", "23": "1×45'", "24": "1×45'", "25": "1×45'", "26": "1×45'"}, "SAM|vacuum": {"1": "3×15\"", "2": "3×15\"", "3": "3×15\"", "4": "3×15\"", "5": "3×15\"", "6": "3×15\"", "7": "3×15\"", "8": "3×15\"", "9": "3×15\"", "10": "3×15\"", "11": "3×15\"", "12": "3×15\"", "13": "3×15\"", "14": "3×15\"", "15": "3×15\"", "16": "3×15\"", "17": "3×15\"", "18": "3×15\"", "19": "3×15\"", "20": "3×15\"", "21": "3×15\"", "22": "3×15\"", "23": "3×15\"", "24": "3×15\"", "25": "3×15\"", "26": "3×15\""}};
+const EX = {"J1|tirage_vertical": {"n": "Tirage vertical poitrine (prise large)", "r": "1'30", "cb": true, "t": "Buste légèrement en arrière, amène la barre au nez."}, "J1|rowing_1bras": {"n": "Rowing unilatéral (haltère ou poulie)", "r": "1'/bras", "cb": true, "t": "Descends l'épaule devant, coude vers la hanche."}, "J1|rowing_pbasse": {"n": "Tirage horizontal poulie basse (supination)", "r": "1'30", "cb": true, "t": "Serre les omoplates en fin de tirage."}, "J1|souleve_terre": {"n": "Soulevé de terre à la Smith", "r": "1'30", "cb": true, "t": "Dos plat, barre près des tibias, pousse dans les talons."}, "J1|rowing_debout": {"n": "Tirage menton à la poulie basse", "r": "1'30", "cb": true, "t": "Coudes vers le haut, pas plus haut que les épaules."}, "J1|elevation_lat": {"n": "Élévations latérales", "r": "1'30", "cb": true, "t": "Bras quasi tendus, monte dans l'axe des épaules."}, "J1|facepull": {"n": "Face-pull à la poulie (corde)", "r": "1'", "cb": true, "t": "Greffe v2 · Tire la corde vers le visage, coudes hauts, écarte en fin de tirage. Santé d'épaule. À 20 reps propres sur les 3 séries → monte d'un cran et repars à 15."}, "J1|crunch": {"n": "Crunch", "r": "30\"", "cb": false, "t": "Enroule le buste, expire en haut."}, "J1|enroulement": {"n": "Enroulement de bassin", "r": "30\"", "cb": false, "t": "Décolle le bassin, contrôle la descente."}, "J2|dc": {"n": "Développé couché à la Smith (ou chest press)", "r": "2'", "cb": true, "t": "Frôle les pecs, pousse fort, ne repose pas en haut."}, "J2|dc_incline": {"n": "Développé incliné Smith (ou haltères)", "r": "1'30", "cb": true, "t": "Banc à ~30°, trajectoire vers le haut des pecs."}, "J2|ecarte": {"n": "Écarté machine (pec deck)", "r": "1'30", "cb": true, "t": "Légère flexion de coude constante, ouvre dans l'axe."}, "J2|oiseau": {"n": "Oiseau machine (rear delt)", "r": "1'30", "cb": true, "t": "Serre l'arrière de l'épaule, dans l'axe des épaules."}, "J2|curl_incline": {"n": "Curl incliné (ou poulie basse)", "r": "1'30", "cb": true, "t": "Supination, coudes fixes le long du corps."}, "J2|curl_pupitre": {"n": "Curl pupitre / machine", "r": "1'/bras", "cb": true, "t": "Amplitude complète, bras collé au support."}, "J2|gainage": {"n": "Gainage planche", "r": "1'", "cb": false, "t": "Corps aligné, abdos + fessiers serrés."}, "J2|gainage_obl": {"n": "Gainage oblique", "r": "1'", "cb": false, "t": "Hanche haute, change de côté."}, "J4|squat": {"n": "Squat guidé (Smith/hack) ou presse", "r": "2'", "cb": true, "t": "Sous la parallèle, talons au sol."}, "J4|leg_curl": {"n": "Leg curl assis", "r": "1'30", "cb": true, "t": "Buste légèrement en avant, contrôle le retour."}, "J4|fentes": {"n": "Fentes à la Smith", "r": "1'/jambe", "cb": true, "t": "Genou arrière vers le sol, buste droit."}, "J4|sdt_roumain": {"n": "Soulevé roumain à la Smith", "r": "1'30", "cb": true, "t": "Jambes semi-fléchies, fessiers en arrière, dos plat."}, "J4|mollets": {"n": "Mollets presse / machine", "r": "1'30", "cb": true, "t": "Amplitude complète, étire en bas."}, "J4|lombaires": {"n": "Extension au banc à lombaires", "r": "1'30", "cb": false, "t": "Remonte sans hyperextension, dos gainé."}, "J5|traction": {"n": "Tirage vertical lourd (ou assisté)", "r": "1'-1'30", "cb": false, "t": "Reprise : remplace les tractions au poids de corps. Amène au menton."}, "J5|rowing_assis": {"n": "Tirage horizontal assis (neutre)", "r": "1'30", "cb": true, "t": "Tire vers le bas-ventre, dos droit."}, "J5|rowing_yates": {"n": "Rowing machine / T-bar (pronation)", "r": "1'30", "cb": true, "t": "Le long du corps, coudes près des flancs."}, "J5|pullover": {"n": "Pull-over à la poulie haute (bras tendus)", "r": "1'30", "cb": true, "t": "Greffe v2 · Bras quasi tendus, amène la barre aux cuisses avec le grand dorsal, remonte contrôlé. À 15 reps sur les 3 séries → monte d'un cran et repars à 12."}, "J5|dips": {"n": "Dips machine (assistée/lestée)", "r": "1'30", "cb": true, "t": "Bras parallèles au sol, buste droit (triceps)."}, "J5|ext_nuque": {"n": "Extension triceps nuque (poulie/haltère)", "r": "1'30", "cb": true, "t": "Coude haut et fixe, déploie complètement."}, "J5|pushdown": {"n": "Extension triceps poulie (pushdown)", "r": "1'30", "cb": true, "t": "Coudes collés au corps, déploie complètement."}, "J5|crunch": {"n": "Crunch", "r": "30\"", "cb": false, "t": "Idem séance 1, lesté en fin de programme."}, "J5|enroulement": {"n": "Enroulement de bassin", "r": "30\"", "cb": false, "t": "Idem séance 1."}, "SAM|liss": {"n": "Cardio LISS — vélo / marche rapide / elliptique", "r": "—", "cb": false, "t": "Zone 2 : allure où tu peux tenir une conversation. Brûle le gras sans entamer la récup. 30 min semaines 1-4, 40 min jusqu'à S12, 45 min ensuite."}, "SAM|vacuum": {"n": "Stomach vacuum (aspiration du ventre)", "r": "30\"", "cb": false, "t": "Expire à fond, rentre le nombril vers la colonne, tiens 15 secondes. Transverse = taille plus serrée."}};
+const DAYS = {"J1": {"tab": "LUN", "mini": "Dos larg.", "sub": "Dos largeur · Épaules · Abdos", "ex": ["J1|tirage_vertical", "J1|rowing_1bras", "J1|rowing_pbasse", "J1|souleve_terre", "J1|rowing_debout", "J1|elevation_lat", "J1|facepull", "J1|crunch", "J1|enroulement"]}, "J2": {"tab": "MAR", "mini": "Pecs", "sub": "Pecs · Biceps · Gainage", "ex": ["J2|dc", "J2|dc_incline", "J2|ecarte", "J2|oiseau", "J2|curl_incline", "J2|curl_pupitre", "J2|gainage", "J2|gainage_obl"]}, "J4": {"tab": "JEU", "mini": "Jambes", "sub": "Jambes complètes", "ex": ["J4|squat", "J4|leg_curl", "J4|fentes", "J4|sdt_roumain", "J4|mollets", "J4|lombaires"]}, "J5": {"tab": "VEN", "mini": "Dos ép.", "sub": "Dos épaisseur · Triceps · Abdos", "ex": ["J5|traction", "J5|rowing_assis", "J5|rowing_yates", "J5|pullover", "J5|dips", "J5|ext_nuque", "J5|pushdown", "J5|crunch", "J5|enroulement"]}, "SAM": {"tab": "SAM", "mini": "Cardio", "sub": "Cardio LISS · Gainage profond", "ex": ["SAM|liss", "SAM|vacuum"]}};
+const RESETS = {"J1|tirage_vertical": [6, 11, 16, 25], "J1|rowing_1bras": [7, 13, 19, 25], "J1|rowing_pbasse": [5, 12, 20], "J1|souleve_terre": [5, 9, 12, 17, 20, 23, 26], "J1|rowing_debout": [8, 14, 20, 26], "J1|elevation_lat": [9, 17, 25], "J2|dc": [6, 12, 17, 20, 25], "J2|dc_incline": [6, 14, 20], "J2|ecarte": [7, 13, 19, 25], "J2|oiseau": [12, 20], "J2|curl_incline": [12, 23], "J2|curl_pupitre": [11, 22], "J4|squat": [2, 8, 11, 18, 23, 26], "J4|leg_curl": [8, 14, 21], "J4|fentes": [7, 14, 21], "J4|sdt_roumain": [7, 11, 16, 22, 25], "J4|mollets": [2, 9, 15, 22], "J5|rowing_assis": [8, 15, 22], "J5|rowing_yates": [3, 10, 14, 20, 24], "J5|dips": [9, 15, 22], "J5|ext_nuque": [9, 15, 22], "J5|pushdown": [3, 11, 18, 24]};
+const STORE_KEY = "keepcool_prog_v1";
+
+let state = {};      // "<week>|<exoKey>" -> {c:"", s:[bool,...]}
+let day = "J1";
+let week = 1;
+let saveTimer = null;
+
+// ---------- stockage : window.storage (dans Claude) sinon localStorage (navigateur / écran d'accueil) ----------
+const Store = {
+  get(k){
+    if(typeof window!=="undefined" && window.storage && window.storage.get) return window.storage.get(k);
+    return Promise.resolve((()=>{ try{ const v=localStorage.getItem(k); return v?{key:k,value:v}:null; }catch(e){ return null; } })());
+  },
+  set(k,v){
+    if(typeof window!=="undefined" && window.storage && window.storage.set) return window.storage.set(k,v);
+    return Promise.resolve((()=>{ try{ localStorage.setItem(k,v); }catch(e){} })());
+  }
+};
+
+// ---------- persistance ----------
+async function loadState(){
+  try{ const r = await Store.get(STORE_KEY); if(r && r.value) state = JSON.parse(r.value); }
+  catch(e){ state = {}; }
+}
+function queueSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{ try{ await Store.set(STORE_KEY, JSON.stringify(state)); }catch(e){} }, 400);
+}
+function row(exoKey){
+  const k = week+"|"+exoKey;
+  if(!state[k]) state[k] = {c:"", s:[]};
+  return state[k];
+}
+
+// ---------- helpers ----------
+function parseSets(v){
+  if(!v || v==="—") return {n:0,label:""};
+  const m = v.match(/^(\d+)×(.+)$/);
+  if(m) return {n:parseInt(m[1],10), label:m[2].trim()};
+  return {n:1, label:v};          // bloc unique (ex "3'non-stop")
+}
+function lastCharge(exoKey){
+  for(let w=week-1; w>=1; w--){ const r=state[w+"|"+exoKey]; if(r && r.c) return r.c; }
+  return "";
+}
+function isReset(exoKey){ return (RESETS[exoKey]||[]).includes(week); }
+
+const REST_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+
+// ---------- rendu ----------
+function render(){
+  state._ui = {d:day, w:week}; queueSave();
+  // tabs
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = "";
+  for(const d of Object.keys(DAYS)){
+    const b = document.createElement("button");
+    b.className = "tab"+(d===day?" active":"");
+    b.innerHTML = "<b>"+DAYS[d].tab+"</b><span>"+DAYS[d].mini+"</span>";
+    b.onclick = ()=>{ day=d; render(); window.scrollTo(0,0); };
+    tabsEl.appendChild(b);
+  }
+  document.getElementById("dayTitle").textContent = DAYS[day].sub;
+  document.getElementById("daySub").innerHTML = '<span class="sub">Séance '+({J1:1,J2:2,J4:3,J5:4,SAM:5})[day]+' / 5 · '+DAYS[day].tab.toLowerCase()+'</span>';
+  document.getElementById("wkNum").textContent = "Sem. "+week;
+  document.getElementById("statusWk").textContent = "Semaine "+week+" / 26";
+  document.getElementById("prev").disabled = week<=1;
+  document.getElementById("next").disabled = week>=26;
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  // banner semaine de progression
+  const resetEx = DAYS[day].ex.filter(k=>{ const v=DATA[k] && DATA[k][week]; return v && v!=="—" && isReset(k); });
+  if(resetEx.length){
+    const bn = document.createElement("div");
+    bn.className = "banner";
+    bn.innerHTML = '<span>↑</span><div><b>Semaine de progression.</b> Sur les exercices marqués <b>↑ monte d\'un cran</b>, augmente la charge et repars en bas de fourchette de reps.</div>';
+    list.appendChild(bn);
+  }
+
+  let total=0, doneCount=0;
+
+  DAYS[day].ex.forEach((exoKey, i)=>{
+    const v = DATA[exoKey] && DATA[exoKey][week];
+    if(!v || v==="—") return;                 // exo non programmé cette semaine
+    const meta = EX[exoKey];
+    const ps = parseSets(v);
+    const r = row(exoKey);
+    if(r.s.length !== ps.n) r.s = new Array(ps.n).fill(false).map((x,idx)=> r.s[idx]||false);
+    const allDone = ps.n>0 && r.s.every(Boolean);
+    total++; if(allDone) doneCount++;
+    const reset = meta.cb && isReset(exoKey);
+
+    const card = document.createElement("div");
+    card.className = "card"+(allDone?" done":"")+(reset&&!allDone?" reset":"");
+
+    // top
+    const top = document.createElement("div"); top.className="c-top";
+    top.innerHTML = '<div class="c-name"><span class="c-idx">'+(i+1)+'.</span> '+meta.n+'</div>'+
+                    '<div class="c-rest">'+REST_ICON+meta.r+'</div>';
+    card.appendChild(top);
+
+    // objectif
+    const obj = document.createElement("div"); obj.className="obj";
+    obj.innerHTML = '<span class="lab">Objectif</span><span class="val">'+v.replace("×"," × ")+'</span>'+
+                    (reset?'<span class="pill">↑ monte d\'un cran</span>':'');
+    card.appendChild(obj);
+
+    // séries (chips)
+    if(ps.n>0){
+      const sets = document.createElement("div"); sets.className="sets";
+      for(let s=0; s<ps.n; s++){
+        const chip = document.createElement("button");
+        chip.className = "chip"+(r.s[s]?" on":"");
+        chip.textContent = ps.label;
+        chip.setAttribute("aria-pressed", r.s[s]?"true":"false");
+        chip.onclick = ()=>{ r.s[s]=!r.s[s]; if(!r.c){ const lc=lastCharge(exoKey); if(lc) r.c=lc; } queueSave();
+          if(r.s[s]){ startTimer(restSeconds(meta.r), meta.n); } else { stopTimer(); }
+          render(); };
+        sets.appendChild(chip);
+      }
+      card.appendChild(sets);
+    }
+
+    // charge
+    const ch = document.createElement("div"); ch.className="charge";
+    const inp = document.createElement("input");
+    inp.type="text"; inp.inputMode="decimal"; inp.value = r.c || "";
+    if(!r.c){ const lc=lastCharge(exoKey);
+      inp.placeholder = reset ? "↑ monte d'un cran" : (lc ? lc+" (sem. préc.)" : "kg / n° cran");
+      if(reset) inp.className="amber";
+    }
+    inp.onchange = ()=>{ r.c = inp.value.trim(); queueSave(); };
+    inp.oninput  = ()=>{ r.c = inp.value.trim(); queueSave(); };
+    ch.innerHTML = '<label>Charge</label>';
+    ch.appendChild(inp);
+    card.appendChild(ch);
+
+    // technique repliable + vidéo
+    const tbtn = document.createElement("button"); tbtn.className="tech-btn";
+    tbtn.innerHTML = '<span class="car">▸</span> Exécution';
+    const tech = document.createElement("div"); tech.className="tech"; tech.textContent = meta.t;
+    tbtn.onclick = ()=>{ tech.classList.toggle("open"); tbtn.classList.toggle("open"); };
+    const brow = document.createElement("div"); brow.className="btnrow";
+    brow.appendChild(tbtn);
+    if(exoKey!=="SAM|liss"){
+      const vb=document.createElement("a"); vb.className="vid-btn";
+      vb.textContent="▶ Vidéo technique"; vb.target="_blank"; vb.rel="noopener";
+      vb.href="https://www.youtube.com/results?search_query="+encodeURIComponent(meta.n.split("(")[0].split("—")[0].trim()+" technique musculation");
+      brow.appendChild(vb);
+    }
+    card.appendChild(brow); card.appendChild(tech);
+
+    list.appendChild(card);
+  });
+
+  // statut
+  document.getElementById("prog").textContent = doneCount+"/"+total+" exos";
+  document.getElementById("progbar").style.width = total? (doneCount/total*100)+"%" : "0%";
+}
+
+document.getElementById("prev").onclick = ()=>{ if(week>1){week--; render(); window.scrollTo(0,0);} };
+document.getElementById("next").onclick = ()=>{ if(week<26){week++; render(); window.scrollTo(0,0);} };
+
+// ---------- timer de repos ----------
+let tmr={id:null,total:0,left:0};
+let AC=null;
+function beep(){
+  try{
+    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime;
+    [0,0.28].forEach(off=>{
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.connect(g); g.connect(AC.destination); o.frequency.value=880;
+      g.gain.setValueAtTime(0.0001,t+off);
+      g.gain.exponentialRampToValueAtTime(0.35,t+off+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+off+0.22);
+      o.start(t+off); o.stop(t+off+0.25);
+    });
+  }catch(e){}
+}
+function restSeconds(rs){
+  if(!rs) return 0;
+  const secs=[]; let m;
+  const reMin=/(\d+)\s*'(\d+)?/g;
+  while((m=reMin.exec(rs))) secs.push(parseInt(m[1],10)*60+(m[2]?parseInt(m[2],10):0));
+  const reSec=/(\d+)\s*"/g;
+  while((m=reSec.exec(rs))) secs.push(parseInt(m[1],10));
+  return secs.length ? Math.max(...secs) : 0;
+}
+function fmt(s){ return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function tick(){
+  document.getElementById("tTime").textContent = fmt(tmr.left);
+  document.getElementById("tBarI").style.width = (tmr.total? (tmr.left/tmr.total*100):0)+"%";
+  if(tmr.left<=0){ finishTimer(); return; }
+  tmr.left--;
+}
+function startTimer(sec,label){
+  stopTimer();
+  if(!sec) return;
+  try{ AC = AC || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+  tmr.total=sec; tmr.left=sec;
+  document.getElementById("tLabel").textContent = "Repos · "+label;
+  document.getElementById("status").classList.add("timing");
+  tick();
+  tmr.id=setInterval(tick,1000);
+}
+function finishTimer(){
+  if(tmr.id){ clearInterval(tmr.id); tmr.id=null; }
+  document.getElementById("status").classList.remove("timing");
+  if(navigator.vibrate){ try{ navigator.vibrate([250,120,250]); }catch(e){} }
+  beep();
+}
+function stopTimer(){
+  if(tmr.id){ clearInterval(tmr.id); tmr.id=null; }
+  document.getElementById("status").classList.remove("timing");
+}
+document.getElementById("tCancel").onclick = stopTimer;
+
+// ---------- sauvegarde / restauration fichier ----------
+function exportData(){
+  try{
+    const blob = new Blob([JSON.stringify(state)], {type:"application/json"});
+    const a = document.createElement("a");
+    const d = new Date(), p = n=>String(n).padStart(2,"0");
+    a.href = URL.createObjectURL(blob);
+    a.download = "muscu_sauvegarde_"+d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  }catch(e){ alert("Export impossible : "+e.message); }
+}
+function importData(file){
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const obj = JSON.parse(r.result);
+      if(!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("format");
+      state = obj; queueSave(); render();
+      alert("Sauvegarde restaurée ✔");
+    }catch(e){ alert("Fichier invalide — restauration annulée, tes données actuelles sont intactes."); }
+  };
+  r.readAsText(file);
+}
+document.getElementById("btnExport").onclick = exportData;
+document.getElementById("btnImport").onclick = ()=>document.getElementById("fileImport").click();
+document.getElementById("fileImport").onchange = e=>{ if(e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
+
+// ---------- démarrage : jour auto + reprise de la dernière position ----------
+(async function init(){
+  await loadState();
+  const ui = state._ui || {};
+  const autoMap = {1:"J1", 2:"J2", 4:"J4", 5:"J5", 6:"SAM"};
+  day  = autoMap[new Date().getDay()] || ui.d || "J1";
+  week = ui.w || 1;
+  render();
+})();
+
+// ---------- service worker (mode appli installée : hors-ligne) ----------
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  try{ navigator.serviceWorker.register("./sw.js"); }catch(e){}
+}
+</script>
+</body>
+</html>
